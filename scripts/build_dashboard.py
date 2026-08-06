@@ -145,7 +145,8 @@ def build_payload(df: pd.DataFrame) -> dict:
                 "20260806_OEM_Products.xlsx",
             ],
             "notes": [
-                "Month range filter limits both current and comparison windows.",
+                "Default period is latest-year YTD so Previous year compare is meaningful. Expand From to include earlier months if needed.",
+        "Month range filter limits both current and comparison windows.",
                 "Compare shifts the selected window back by 1 month, 1 quarter (3 months), or 1 year (12 months).",
                 "Rankings use absolute $ delta (current window vs compare window).",
                 "Business Type from Power BI: D_R = Resellers, End_User, OEM_KA = OEM.",
@@ -498,8 +499,12 @@ function initControls() {{
   const opts = months.map(m => `<option value="${{m.key}}">${{m.label}}</option>`).join('');
   from.innerHTML = opts;
   to.innerHTML = opts;
-  from.value = months[0].key;
-  to.value = months[months.length-1].key;
+  // Default: latest year YTD (or last 12 months) so prev-year compare yields real declines.
+  // Full-span + prev_year makes current include prior year and almost never declines.
+  const latestYear = months[months.length - 1].year;
+  const ytdStart = months.find(m => m.year === latestYear) || months[Math.max(0, months.length - 12)];
+  from.value = ytdStart.key;
+  to.value = months[months.length - 1].key;
   from.onchange = onFilter;
   to.onchange = onFilter;
   document.getElementById('compareMode').onchange = onFilter;
