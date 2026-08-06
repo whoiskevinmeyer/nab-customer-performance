@@ -150,7 +150,7 @@ def build_payload(df: pd.DataFrame) -> dict:
                 "Compare shifts the selected window back by 1 month, 1 quarter (3 months), or 1 year (12 months).",
                 "Rankings use absolute $ delta (current window vs compare window).",
                 "Business Type from Power BI: D_R = Resellers, End_User, OEM_KA = OEM.",
-                "Organic mode hides accounts with $0 in the compare window (new ramps).",
+                "Organic mode hides accounts with $0 in the compare window (new ramps).","Core plateau = compare ≥ $10k, current ≥ $5k, |Δ%| ≤ 15%, not in Top 20 accel/decline; ranked by current $ for upsell focus.",
             ],
             "rowCount": int(len(df)),
             "factCount": len(facts),
@@ -324,6 +324,12 @@ def render_html(payload: dict) -> str:
     </div>
   </section>
 
+  <section class="card">
+    <h3 style="color:var(--amber);text-transform:none;letter-spacing:0;font-size:.9rem">◆ Core plateau · upsell targets</h3>
+    <div class="sub" style="margin-bottom:8px">Established accounts still buying (compare &amp; current ≥ $5k) with moderate change (|Δ%| ≤ 40%), excluding Top 20 accel/decline. Ranked by upsell score = current $ × flatness — large stable books that need a proactive upsell, not rescue or celebration.</div>
+    <div style="overflow:auto"><table id="platTable"><thead></thead><tbody></tbody></table></div>
+  </section>
+
   <section class="card detail" id="detail">
     <h2 id="detailTitle">Company</h2>
     <div class="sub" id="detailMeta"></div>
@@ -475,6 +481,24 @@ function compute() {{
   let news = rows.filter(r => r.compare <= 0 && r.current >= 10000);
   news.sort((a,b) => b.current - a.current);
 
+  // Core plateau / upsell targets
+  const accKeys = new Set(acc.slice(0,20).map(r => r.customer + '|' + r.segment));
+  const decKeys = new Set(dec.slice(0,20).map(r => r.customer + '|' + r.segment));
+  let plateau = rows.filter(r => {{
+    if (r.compare < 5000) return false;
+    if (r.current < 5000) return false;
+    if (r.pct == null) return false;
+    if (Math.abs(r.pct) > 40) return false;
+    const k = r.customer + '|' + r.segment;
+    if (accKeys.has(k) || decKeys.has(k)) return false;
+    return true;
+  }}).map(r => {{
+    const flat = 1 - Math.min(Math.abs(r.pct) / 100, 0.5);
+    const score = r.current * (0.55 + 0.45 * flat);
+    return {{ ...r, upsellScore: round2(score) }};
+  }});
+  plateau.sort((a,b) => b.upsellScore - a.upsellScore);
+
   if (mode === 'organic') acc = organic;
 
   return {{
@@ -486,6 +510,7 @@ function compute() {{
     segTotals,
     acc: acc.slice(0,20),
     dec: dec.slice(0,20),
+    plateau: plateau.slice(0,20),
     news: news.slice(0,20),
   }};
 }}
@@ -625,12 +650,15 @@ function renderTables(st) {{
 
   document.querySelector('#accTable thead').innerHTML = headHTML();
   document.querySelector('#decTable thead').innerHTML = headHTML();
+  document.querySelector('#platTable thead').innerHTML = headHTML();
   document.querySelector('#newTable thead').innerHTML = headHTML();
   document.querySelector('#accTable tbody').innerHTML = bodyHTML(st.acc, 'acc');
   document.querySelector('#decTable tbody').innerHTML = bodyHTML(st.dec, 'dec');
+  document.querySelector('#platTable tbody').innerHTML = bodyHTML(st.plateau || [], 'plat');
   document.querySelector('#newTable tbody').innerHTML = bodyHTML(st.news, 'new');
   bindRows('#accTable', st.acc, 'acc');
   bindRows('#decTable', st.dec, 'dec');
+  bindRows('#platTable', st.plateau || [], 'plat');
   bindRows('#newTable', st.news, 'new');
 }}
 
