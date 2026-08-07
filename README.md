@@ -7,7 +7,7 @@ Public static dashboard: wholesale customer movers (Resellers / End Users / OEM)
 | URL | Notes |
 |-----|--------|
 | **https://nab-customer-performance.wvvy.co** | Preferred. Requires Cloudflare A → `178.156.217.235` (DNS only). |
-| **https://os1hqxqflxpfedhd25jwkygo.178.156.217.235.sslip.io** | Live now. No password. Share this until DNS/LE settle. |
+| **https://os1hqxqflxpfedhd25jwkygo.178.156.217.235.sslip.io** | Live backup. Same HTTP Basic auth. |
 
 - **Auth**: HTTP Basic — user `polymakernab` (password in 1P / Kevin)
 - **Coolify app UUID**: `os1hqxqflxpfedhd25jwkygo`
