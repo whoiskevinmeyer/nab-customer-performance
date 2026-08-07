@@ -176,6 +176,11 @@
     <h2 id="detailTitle">Company</h2>
     <div class="sub" id="detailMeta"></div>
     <div class="chart-wrap tall" style="margin-top:12px"><canvas id="detailChart"></canvas></div>
+    <div class="legend" style="display:flex;gap:16px;margin:8px 0 16px;font-size:.75rem;color:#8b9bb0">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#5b9dff;border-radius:2px"></span> Current period</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#3dd68c;border-radius:2px;opacity:0.7"></span> Compare period</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#8b9bb0;border-radius:2px;opacity:0.4"></span> Other months</span>
+    </div>
     <h3 style="margin-top:16px;color:var(--amber);text-transform:none;letter-spacing:0;font-size:.9rem">Products purchased</h3>
     <div class="sub" id="productMeta" style="margin-bottom:8px">Monthly Sales $ by SKU (source has no qty column).</div>
     <div style="overflow:auto;max-height:420px"><table id="productTable"><thead></thead><tbody></tbody></table></div>
@@ -588,7 +593,7 @@ function showDetail(r) {
   const st = window.__lastState;
   const currSet = new Set(st.currKeys);
   const cmpSet = new Set(st.cmpKeys);
-  const colors = series.map(x => currSet.has(x.k) ? 'rgba(91,157,255,.9)' : cmpSet.has(x.k) ? 'rgba(61,214,140,.55)' : 'rgba(139,155,176,.35)');
+  const colors = series.map(x => currSet.has(x.k) ? '#5b9dff' : cmpSet.has(x.k) ? '#3dd68c' : '#8b9bb0');
 
   const ctx = document.getElementById('detailChart');
   if (detailChart) detailChart.destroy();
