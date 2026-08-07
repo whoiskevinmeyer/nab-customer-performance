@@ -123,9 +123,8 @@
         </label>
         <label>Compare to
           <select id="compareMode">
-            <option value="prev_year" selected>Previous year</option>
-            <option value="prev_quarter">Previous quarter</option>
-            <option value="prev_month">Previous month</option>
+            <option value="prev_period" selected>Previous period</option>
+            <option value="prev_year">Previous year (same slice)</option>
           </select>
         </label>
       </div>
@@ -257,8 +256,13 @@ function selectedRangeKeys() {
 function compareRangeKeys(currKeys) {
   if (!currKeys.length) return [];
   const mode = document.getElementById('compareMode').value;
-  const delta = mode === 'prev_month' ? -1 : mode === 'prev_quarter' ? -3 : -12;
-  return currKeys.map(k => shiftKey(k, delta));
+  if (mode === 'prev_period') {
+    // previous period of same length
+    const len = currKeys.length;
+    return currKeys.map(k => shiftKey(k, -len));
+  }
+  // prev_year = same months last year
+  return currKeys.map(k => shiftKey(k, -12));
 }
 
 function labelForKeys(keys) {
